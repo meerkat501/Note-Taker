@@ -9,11 +9,11 @@ const PORT = process.env.PORT || 3001;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.get('/notes', (req, res) => {
+app.get('/public', (req, res) => {
     res.sendFile(path.join(__dirname, 'notes.html'));
 });
 
-app.get('/', (req, res) => {
+app.get('/public', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -31,6 +31,22 @@ app.post('/api/notes', (req, res) => {
         if (err) throw err;
         const notes = JSON.parse(data);
         notes.push(newNote);
+    });
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+
+    fs.readFile('db.json', 'utf8', (err, data) => {
+        if (err) throw err;
+        let notes = JSON.parse(data);
+
+        notes = notes.filter(note => note.id !== noteId);
+
+        fs.writeFile('db.json', JSON.stringify(notes), (err) => {
+            if (err) throw err;
+            res.json({ message: 'Note deleted successfully' });
+        });
     });
 });
 
